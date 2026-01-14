@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  vhd-api:
+    build: .
+    container_name: vhd-audio-api
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+    volumes:
+      # Mounting model agar bisa diganti tanpa rebuild image (opsional)
+      - ./model.h5:/app/model.h5
+    restart: unless-stopped
