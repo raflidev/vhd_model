@@ -4,9 +4,23 @@ import numpy as np
 import librosa
 import tensorflow as tf
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from tensorflow.keras.models import load_model
 
 app = FastAPI()
+
+# CORS middleware configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        # Add more origins as needed
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 MODEL_PATH = "model.h5"
 CLASSES = ['AS', 'MR', 'MS', 'MVP', 'N']
@@ -55,6 +69,16 @@ def preprocess_audio(file_like):
 def read_root():
     model_status = "loaded" if model is not None else "not loaded"
     return {"message": "VHD Audio Classification API", "model_status": model_status}
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring and container orchestration."""
+    return {
+        "status": "healthy",
+        "model_loaded": model is not None,
+        "service": "VHD Audio Classification API",
+        "version": "1.0.0"
+    }
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
